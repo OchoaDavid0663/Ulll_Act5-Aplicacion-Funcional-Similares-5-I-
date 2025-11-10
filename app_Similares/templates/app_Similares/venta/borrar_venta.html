@@ -1,0 +1,23 @@
+<!-- app_Similares/templates/venta/borrar_venta.html -->
+{% extends 'base.html' %} 
+
+{% block title %}Borrar Venta{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card shadow-sm p-4" style="background-color: #fce4ec;"> {# Rosa claro #}
+        <h2 class="card-title text-center mb-4" style="color: #c0392b;">Confirmar Eliminación de Venta</h2>
+        <div class="alert alert-danger text-center" role="alert">
+            <p>¿Estás seguro de que deseas eliminar la venta con factura <strong>#{{ venta.numero_factura }}</strong> del cliente <strong>{{ venta.cliente.nombre }} {{ venta.cliente.apellido }}</strong>?</p>
+            <p><strong>¡Esta acción no se puede deshacer!</strong></p>
+        </div>
+        <form method="post">
+            {% csrf_token %}
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-danger btn-lg">Sí, Eliminar Venta</button>
+                <a href="{% url 'ver_ventas' %}" class="btn btn-secondary btn-lg">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

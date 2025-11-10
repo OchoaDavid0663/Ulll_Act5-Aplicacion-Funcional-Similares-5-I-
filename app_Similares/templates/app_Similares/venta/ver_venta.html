@@ -1,0 +1,120 @@
+<!-- app_Similares/templates/venta/ver_venta.html -->
+{% extends 'base.html' %} 
+
+{% block title %}Ver Ventas{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card shadow-sm p-4" style="background-color: #f0f8ff;"> {# Azul claro #}
+        <h2 class="card-title text-center mb-4" style="color: #3498db;">Lista de Ventas</h2>
+        <a href="{% url 'agregar_venta' %}" class="btn btn-primary mb-3" style="background-color: #28a745; border-color: #28a745;">
+            <i class="fas fa-plus-circle"></i> Agregar Nueva Venta
+        </a>
+        {% if ventas %}
+        <div class="table-responsive">
+            <table class="table table-hover table-striped">
+                <thead style="background-color: #add8e6; color: #333;"> {# Azul pálido #}
+                    <tr>
+                        <th scope="col">Factura #</th>
+                        <th scope="col">Cliente</th>
+                        <th scope="col">Fecha</th>
+                        <th scope="col">Total</th>
+                        <th scope="col">Estado</th>
+                        <th scope="col">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for venta in ventas %}
+                    <tr>
+                        <td>{{ venta.numero_factura }}</td>
+                        <td>{{ venta.cliente.nombre }} {{ venta.cliente.apellido }}</td>
+                        <td>{{ venta.fecha_venta|date:"d M Y H:i" }}</td>
+                        <td>${{ venta.total }}</td>
+                        <td>
+                            {% if venta.estado == 'COMPLETADA' %}
+                                <span class="badge bg-success">{{ venta.get_estado_display }}</span>
+                            {% elif venta.estado == 'PENDIENTE' %}
+                                <span class="badge bg-warning text-dark">{{ venta.get_estado_display }}</span>
+                            {% else %}
+                                <span class="badge bg-danger">{{ venta.get_estado_display }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="#" class="btn btn-info btn-sm me-2" data-bs-toggle="modal" data-bs-target="#verDetalleModal{{ venta.pk }}" style="background-color: #17a2b8; border-color: #17a2b8;">
+                                <i class="fas fa-eye"></i> Ver
+                            </a>
+                            <a href="{% url 'actualizar_venta' venta.pk %}" class="btn btn-warning btn-sm me-2" style="background-color: #ffc107; border-color: #ffc107;">
+                                <i class="fas fa-edit"></i> Editar
+                            </a>
+                            <a href="#" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#borrarVentaModal{{ venta.pk }}" style="background-color: #dc3545; border-color: #dc3545;">
+                                <i class="fas fa-trash-alt"></i> Borrar
+                            </a>
+                        </td>
+                    </tr>
+
+                    <!-- Modal Ver Detalle -->
+                    <div class="modal fade" id="verDetalleModal{{ venta.pk }}" tabindex="-1" aria-labelledby="verDetalleModalLabel{{ venta.pk }}" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+                                <div class="modal-header" style="background-color: #add8e6; color: #333;">
+                                    <h5 class="modal-title" id="verDetalleModalLabel{{ venta.pk }}">Detalles de Venta #{{ venta.numero_factura }}</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body" style="background-color: #f8f9fa;">
+                                    <p><strong>Cliente:</strong> {{ venta.cliente.nombre }} {{ venta.cliente.apellido }}</p>
+                                    <p><strong>Fecha:</strong> {{ venta.fecha_venta|date:"d M Y H:i" }}</p>
+                                    <p><strong>Total:</strong> ${{ venta.total }}</p>
+                                    <p><strong>Método de Pago:</strong> {{ venta.get_metodo_pago_display }}</p>
+                                    <p><strong>Estado:</strong> {{ venta.get_estado_display }}</p>
+                                    <p><strong>Observaciones:</strong> {{ venta.observaciones|default:"Ninguna" }}</p>
+                                    <p><strong>Medicamentos:</strong>
+                                        <ul>
+                                            {% for med in venta.medicamentos.all %}
+                                                <li>{{ med.nombre }}</li>
+                                            {% empty %}
+                                                <li>Ninguno</li>
+                                            {% endfor %}
+                                        </ul>
+                                    </p>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Modal Borrar Venta -->
+                    <div class="modal fade" id="borrarVentaModal{{ venta.pk }}" tabindex="-1" aria-labelledby="borrarVentaModalLabel{{ venta.pk }}" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+                                <div class="modal-header bg-danger text-white">
+                                    <h5 class="modal-title" id="borrarVentaModalLabel{{ venta.pk }}">Confirmar Eliminación</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <p>¿Estás seguro de que deseas eliminar la venta con factura <strong>#{{ venta.numero_factura }}</strong> del cliente <strong>{{ venta.cliente.nombre }} {{ venta.cliente.apellido }}</strong>?</p>
+                                    <p class="text-danger"><small>Esta acción no se puede deshacer.</small></p>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                    <form action="{% url 'borrar_venta' venta.pk %}" method="post" style="display: inline;">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-danger">Eliminar</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="alert alert-info text-center" role="alert">
+            No hay ventas registradas. <a href="{% url 'agregar_venta' %}" class="alert-link">¡Agrega una ahora!</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
